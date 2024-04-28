@@ -56,5 +56,5 @@ def StartTest(directory):
             cv2.destroyAllWindows()
 
 # Example usage
-directory_path1 = "F:\My projects\Actors Research project\Actors-performance-AI-evaluation"
+directory_path1 = "./test_videos/"
 StartTest(directory_path1)
