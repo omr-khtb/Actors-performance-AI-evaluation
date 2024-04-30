@@ -1,107 +1,79 @@
 import cv2
 import mediapipe as mp
-from dollarpy import Recognizer, Template, Point
-# Point class
-class Point:
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
+from Dollar import recognizer1, Point
 
-# Template class
-class Template:
-    def __init__(self, name, points):
-        self.name = name
-        self.points = points
+# Initialize MediaPipe Pose model
+pose = mp.solutions.pose.Pose()
 
-# Function to extract landmarks from a frame using MediaPipe
-def extract_landmarks(frame, target_width, target_height):
-    # Resize the frame
-    resized_frame = cv2.resize(frame, (target_width, target_height))
-    
+# Define sliding window parameters
+window_size = 23  # Number of frames to accumulate before recognition
+overlap_frames = 5  # Number of frames to overlap between consecutive windows
+
+# Initialize variables
+frame_buffer = []  # Buffer to store frames
+landmarks_buffer = []  # Buffer to store landmarks of each sliding window
+
+# Function to extract landmarks from a frame
+def extract_landmarks(frame):
     # Convert the frame to RGB format
-    RGB = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
+    RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     
     # Process the RGB frame to get the result
     results = pose.process(RGB)
     
     landmarks = []
     for landmark in results.pose_landmarks.landmark:
-        # Scale the landmarks according to the resized frame
-        x = landmark.x * target_width
-        y = landmark.y * target_height
+        # Scale the landmarks according to the frame size
+        x = landmark.x * frame.shape[1]
+        y = landmark.y * frame.shape[0]
         z = 1  # Set z-coordinate to 1
         landmarks.append(Point(x, y, z))
     
     return landmarks
 
-# Initialize MediaPipe Pose model
-pose = mp.solutions.pose.Pose()
+# Open video capture object
+cap = cv2.VideoCapture("hands_chest_frown.mp4")
 
-# Initialize dictionary to store landmarks for each video
-video_landmarks = {}
-
-# Get list of video files in the current directory
-video_files = ["test.mp4"]  # Add your video file(s) here
-
-# Loop over each video file in the directory
-for filename in video_files:
-    cap = cv2.VideoCapture(filename)
-    landmarks = []
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_landmarks = extract_landmarks(frame, 480, 320)  # Resizing to 480x320
-        landmarks.append(frame_landmarks)
-    cap.release()
-    video_landmarks[filename] = landmarks
-
-# Generate template for each video
-template_dict = {}
-for video_file, landmarks in video_landmarks.items():
-    template_points = []
-    for frame_landmarks in landmarks:
-        for landmark in frame_landmarks:
-            # Add landmarks to template with z-coordinate fixed at 1
-            x = landmark.x
-            y = landmark.y
-            z = 1
-            template_points.append(Point(x, y, z))
-    template_dict[video_file] = Template(video_file, template_points)
-
-# Example of how to access template points
-
-temp = []
-for video_file, template in template_dict.items():
-    points_array = []
-    for point in template.points:
-        points_array.append(Point(point.x, point.y, point.z))
-    temp.append((video_file, points_array))
-
-with open("dollar.py", 'r') as source:
-         content = source.readlines()
-
-with open("final.py", "w") as output_file:
-    output_file.writelines(content)
-    output_file.write("result = recognizer.recognize([\n")
-    for point in template.points:
-        output_file.write(f"Point({point.x},{point.y},{point.z}),\n")
-    output_file.write("])\n")
-    output_file.write("print(result)\n")
-    j = 0
-    for i in range (7):
-        j+=1
-        output_file.write(f"result{j} = recognizer{j}.recognize([\n")
-        for point in template.points:
-            output_file.write(f"Point({point.x},{point.y},{point.z}),\n")
-        output_file.write("])\n")
-        print(i)
-        output_file.write(f"print(result{j})\n")
+while cap.isOpened():
+    # Read frame from capture object
+    ret, frame = cap.read()
+    if not ret:
+        print("Can't receive frame (stream end?). Exiting ...")
+        break
     
+    # Resize frame to a specific size (optional)
+    frame = cv2.resize(frame, (480, 320))
+    
+    try:
+        # Extract landmarks from the frame
+        frame_landmarks = extract_landmarks(frame)
+        
+        # Append landmarks to frame buffer
+        frame_buffer.append(frame_landmarks)
+        
+        # Check if enough frames are accumulated for recognition
+        if len(frame_buffer) >= window_size:
+            # Add landmarks of the current window to the landmarks buffer
+            landmarks_buffer.append(frame_buffer)
+            
+            # Pop out a number of frames from the beginning to overlap
+            frame_buffer = frame_buffer[overlap_frames:]
+        
+    except Exception as e:
+        print('Error:', e)
+    
+    # Exit loop if 'q' is pressed
+    if cv2.waitKey(1) == ord('q'):
+        break
 
+# Release video capture object
+cap.release()
+cv2.destroyAllWindows()
+# Loop through landmarks_buffer and print out each list of landmarks
+for window_landmarks in landmarks_buffer:
+    print("Window Landmarks:")
+    for landmarks in window_landmarks:
+        print([(point.x, point.y, 1) for point in landmarks])
+    print("End of Window\n")
 
-
-
-
-
+# Now, landmarks_buffer contains lists of landmarks for each sliding window
