@@ -1,13 +1,19 @@
 import cv2
 import mediapipe as mp
-from Dollar import recognizer1, Point
+
+class Point:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
 
 # Initialize MediaPipe Pose model
 pose = mp.solutions.pose.Pose()
 
 # Define sliding window parameters
-window_size = 23  # Number of frames to accumulate before recognition
-overlap_frames = 5  # Number of frames to overlap between consecutive windows
+window_size = 48  # Number of frames to accumulate before recognition
+overlap_frames = 10  # Number of frames to overlap between consecutive windows
 
 # Initialize variables
 frame_buffer = []  # Buffer to store frames
@@ -32,8 +38,9 @@ def extract_landmarks(frame):
     return landmarks
 
 # Open video capture object
-cap = cv2.VideoCapture("hands_chest_frown.mp4")
-
+cap = cv2.VideoCapture("no.mp4")
+total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+print("Total frames:", total_frames)
 while cap.isOpened():
     # Read frame from capture object
     ret, frame = cap.read()
@@ -70,10 +77,46 @@ while cap.isOpened():
 cap.release()
 cv2.destroyAllWindows()
 # Loop through landmarks_buffer and print out each list of landmarks
-for window_landmarks in landmarks_buffer:
-    print("Window Landmarks:")
-    for landmarks in window_landmarks:
-        print([(point.x, point.y, 1) for point in landmarks])
-    print("End of Window\n")
+#list = []
+#for window_landmarks in landmarks_buffer:
+    #print("Window Landmarks:")
+    #for landmarks in window_landmarks:
+        #list.append([Point(point.x, point.y, 1) for point in landmarks])
+    #print("End of Window\n")
 
 # Now, landmarks_buffer contains lists of landmarks for each sliding window
+
+ct = 0
+for window_landmarks in landmarks_buffer:
+    #print("Window Landmarks:")
+    ct += 1
+
+    #for landmarks in window_landmarks:
+        #print([(point.x, point.y, 1) for point in landmarks])
+        
+    #print("End of Window\n")
+print(ct)
+    
+with open("final.py", "w") as output_file:
+    output_file.write("exec(open('dollar.py').read())\n")
+    output_file.write("recognizer = trained_model()\n")
+    for window_landmarks in landmarks_buffer:
+        output_file.write("result = recognizer.recognize([\n")
+        for landmarks in window_landmarks:
+            for point in landmarks:
+                output_file.write(f"Point({point.x},{point.y},1),\n")
+        output_file.write("])\n")
+        output_file.write("print(result)\n")
+    
+    
+    
+    #j = 0
+    #for i in range (7):
+    #    j+=1
+     #   output_file.write(f"result{j} = recognizer{j}.recognize([\n")
+      #  for point in list.points:
+       #     output_file.write(f"Point({point.x},{point.y},{point.z}),\n")
+        #output_file.write("])\n")
+        
+        #print(i)
+        #output_file.write(f"print(result{j})\n")

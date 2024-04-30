@@ -95,14 +95,18 @@ with open(output_file, "w") as f:
     f.write("from dollarpy import Recognizer, Template, Point\n\n")
     f.write(template_code)
     f.write("\n")  # Add a newline for clarity
-    
+    f.write("def trained_model():\n\n")
     # Create the array elements dynamically
     array_elements = ", ".join([f"{video_label}" for video_label in video_landmarks.keys()])
-    f.write(f"recognizer = Recognizer([{array_elements}])\n")  # Add the dynamically generated line
-    i = 0
-    for video_label in video_landmarks.keys():
-        i += 1
-        f.write(f"recognizer{i} = Recognizer([{video_label}])\n")
+    f.write(f"  recognizer = Recognizer([{array_elements}])\n")  # Add the dynamically generated line
+   
+    #For loop for each element
+    #i = 0
+    #for video_label in video_landmarks.keys():
+    #    i += 1
+    #    f.write(f"  recognizer{i} = Recognizer([{video_label}])\n")
+   
+    f.write("  return recognizer\n")
         
 
 print("Template generation complete.")
