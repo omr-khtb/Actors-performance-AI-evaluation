@@ -106,7 +106,7 @@ with open(output_file, "w") as f:
     recognizer2_videos = [f"{video_label}" for video_label in video_landmarks.keys() if video_label.startswith('n')]
     
     f.write(f"  recognizer = Recognizer([{', '.join(recognizer1_videos)}])\n")
-    f.write(f"  recognizer2 = Recognizer([{', '.join(recognizer2_videos)}])\n")
+    f.write(f"  nrecognizer = Recognizer([{', '.join(recognizer2_videos)}])\n")
         
     i = 0
     list = []
@@ -115,7 +115,7 @@ with open(output_file, "w") as f:
         f.write(f"  {video_label}R = Recognizer([{video_label}])\n")
         #list.append({video_label})
 
-    f.write(f"  return recognizer, nrecognizer\n")
+    f.write(f"  return recognizer, nrecognizer, {len(recognizer1_videos)}\n")
         
 
 print("Template generation complete.")

@@ -13,7 +13,7 @@ pose = mp.solutions.pose.Pose()
 
 # Define sliding window parameters
 window_size = 48  # Number of frames to accumulate before recognition
-overlap_frames = 10  # Number of frames to overlap between consecutive windows
+overlap_frames = 5  # Number of frames to overlap between consecutive windows
 
 # Initialize variables
 frame_buffer = []  # Buffer to store frames
@@ -37,11 +37,17 @@ def extract_landmarks(frame):
     
     return landmarks
 
+ctgwa = 0
 # Open video capture object
-cap = cv2.VideoCapture("no.mp4")
+cap = cv2.VideoCapture("hands_chest_frown.mp4")
 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 print("Total frames:", total_frames)
+
+CurrentFrame = 0
 while cap.isOpened():
+
+    CurrentFrame +=1
+
     # Read frame from capture object
     ret, frame = cap.read()
     if not ret:
@@ -59,12 +65,23 @@ while cap.isOpened():
         frame_buffer.append(frame_landmarks)
         
         # Check if enough frames are accumulated for recognition
-        if len(frame_buffer) >= window_size:
-            # Add landmarks of the current window to the landmarks buffer
-            landmarks_buffer.append(frame_buffer)
-            
-            # Pop out a number of frames from the beginning to overlap
-            frame_buffer = frame_buffer[overlap_frames:]
+        if window_size + CurrentFrame > total_frames -1:
+           print("left current fram: ",CurrentFrame )
+           if total_frames == CurrentFrame -1 :
+             landmarks_buffer.append(frame_buffer)
+             print("appended last")
+        elif len(frame_buffer) >= window_size:
+                ctgwa += 1
+                print("countgwa: ",ctgwa)
+                print("this is frame_ buffer" , len(frame_buffer))
+                print("this is current frames" , CurrentFrame)
+                print("\n")
+                # Add landmarks of the current window to the landmarks buffer
+                landmarks_buffer.append(frame_buffer)
+                
+                # Pop out a number of frames from the beginning to overlap
+                frame_buffer = frame_buffer[window_size-overlap_frames:]
+
         
     except Exception as e:
         print('Error:', e)
@@ -73,6 +90,7 @@ while cap.isOpened():
     if cv2.waitKey(1) == ord('q'):
         break
 
+print("this is count gwa" , ctgwa)
 # Release video capture object
 cap.release()
 cv2.destroyAllWindows()
@@ -95,18 +113,93 @@ for window_landmarks in landmarks_buffer:
         #print([(point.x, point.y, 1) for point in landmarks])
         
     #print("End of Window\n")
-print(ct)
+print("this is number of seg: " , ct)
     
+i = 0
 with open("final.py", "w") as output_file:
     output_file.write("exec(open('dollar.py').read())\n")
     output_file.write("recognizer = trained_model()\n")
+    output_file.write("listp = []\n")
+    output_file.write("listn = []\n")
+    output_file.write("listpr = []\n")
+    output_file.write("listnr = []\n")
+    output_file.write("listfinal = []\n")
     for window_landmarks in landmarks_buffer:
-        output_file.write("result = recognizer.recognize([\n")
+        i += 1
+        output_file.write(f"result{i} = recognizer[0].recognize([\n")
         for landmarks in window_landmarks:
             for point in landmarks:
                 output_file.write(f"Point({point.x},{point.y},1),\n")
         output_file.write("])\n")
-        output_file.write("print(result)\n")
+        
+
+        output_file.write(f"listpr.append(result{i})\n")
+
+        output_file.write("flag = 0\n")
+        output_file.write("for item in listp:\n")
+        output_file.write(f"  if item[0]== result{i}[0]:\n")
+        output_file.write("      flag = 1\n")
+        output_file.write("if flag == 0 :\n")
+        output_file.write(f"  listp.append(result{i})\n")
+
+    i = 0
+    for window_landmarks in landmarks_buffer:
+          i += 1
+          output_file.write(f"resultn{i} = recognizer[1].recognize([\n")
+          for landmarks in window_landmarks:
+            for point in landmarks:
+                output_file.write(f"Point({point.x},{point.y},1),\n")
+          output_file.write("])\n")
+          output_file.write(f"listnr.append(resultn{i})\n")
+        
+          output_file.write("flag = 0\n")
+          output_file.write("for item in listn:\n")
+          output_file.write(f"  if item[0]== resultn{i}[0]:\n")
+          output_file.write("      flag = 1\n")
+          output_file.write("if flag ==0 :\n")
+          output_file.write(f"  listn.append(resultn{i})\n")
+          
+
+          output_file.write(f"if result{i}[0]== 'n' + resultn{i}[0]:\n")
+          output_file.write(f"  if result{i}[1] >=  resultn{i}[1]:\n")
+          output_file.write(f"      fonallist.append(result{i})\n")
+          output_file.write(f"  else:\n")
+          output_file.write(f"     fonallist.append(resultn{i})\n")
+    i = 0
+    for window_landmarks in landmarks_buffer:
+          i += 1
+          output_file.write(f"print('this is each frame result with postive recognizer:')\n")
+          output_file.write(f"print(result{i})\n\n")
+          output_file.write(f"print('this is each frame result with negative recognizer:')\n")
+          output_file.write(f"print(resultn{i})\n\n")
+
+         #output_file.write(f"print('this is list of actions with postive list repeated:')\n")
+         #output_file.write(f"for item in listp\n")
+         #output_file.write(f"  print(item)\n")
+
+          output_file.write(f"print('this is list of actions with postive list unrepeated:')\n")
+          output_file.write(f"print(listp)\n\n")
+
+          output_file.write(f"print('this is list of actions with postive list repeated:')\n")
+          output_file.write(f"print(listpr)\n\n")
+
+          output_file.write(f"print('this is list of actions with negative list unrepeated:')\n")
+          output_file.write(f"print(listn)\n\n")
+
+          output_file.write(f"print('this is list of actions with negative list repeated:')\n")
+          output_file.write(f"print(listnr)\n\n")
+
+          output_file.write(f"print('this is final list of actions')\n")
+          output_file.write(f"print(listfinal)\n\n")
+
+
+          output_file.write(f"print('this is accuracy number of moves of total number of moves')\n")
+          output_file.write(f"print(len(listfinal)/recognizer[3])\n\n")
+    
+
+
+
+        
     
     
     

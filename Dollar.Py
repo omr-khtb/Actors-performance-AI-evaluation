@@ -39609,7 +39609,7 @@ Point(140.97018241882324, 527.2352981567383, 1),
 def trained_model():
 
   recognizer = Recognizer([frown, hands_chest_frown, people, point_eyes, point_face, shoulders, smile_eyebrows, smile_fingers, sno, snode, test2])
-  recognizer2 = Recognizer([nhands_chest_frown, npeople, npoint_eyes, npoint_face, nsmile_eyebrows, nsmile_fingers, nsno, nsnode])
+  nrecognizer = Recognizer([nhands_chest_frown, npeople, npoint_eyes, npoint_face, nsmile_eyebrows, nsmile_fingers, nsno, nsnode])
   frownR = Recognizer([frown])
   hands_chest_frownR = Recognizer([hands_chest_frown])
   nhands_chest_frownR = Recognizer([nhands_chest_frown])
@@ -39629,4 +39629,4 @@ def trained_model():
   snoR = Recognizer([sno])
   snodeR = Recognizer([snode])
   test2R = Recognizer([test2])
-  return recognizer, nrecognizer
+  return recognizer, nrecognizer, 11
