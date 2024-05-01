@@ -57,7 +57,9 @@ video_landmarks = {}
 video_files = [f for f in os.listdir() if f.endswith(".mp4")]
 
 # Loop over each video file in the directory
+print("looping over files")
 for filename in video_files:
+    print(f"looping over file: {filename}")
     video_label = os.path.splitext(filename)[0]
     cap = cv2.VideoCapture(filename)
     landmarks = []
@@ -91,6 +93,7 @@ for video_label, landmarks in video_landmarks.items():
 
 # Write template code to dollar.py file
 # Write template code to dollar.py file
+print("Started writing to file")
 with open(output_file, "w") as f:
     f.write("from dollarpy import Recognizer, Template, Point\n\n")
     f.write(template_code)
@@ -98,15 +101,21 @@ with open(output_file, "w") as f:
     f.write("def trained_model():\n\n")
     # Create the array elements dynamically
     array_elements = ", ".join([f"{video_label}" for video_label in video_landmarks.keys()])
-    f.write(f"  recognizer = Recognizer([{array_elements}])\n")  # Add the dynamically generated line
-   
-    #For loop for each element
-    #i = 0
-    #for video_label in video_landmarks.keys():
-    #    i += 1
-    #    f.write(f"  recognizer{i} = Recognizer([{video_label}])\n")
-   
-    f.write("  return recognizer\n")
+
+    recognizer1_videos = [f"{video_label}" for video_label in video_landmarks.keys() if not video_label.startswith('n')]
+    recognizer2_videos = [f"{video_label}" for video_label in video_landmarks.keys() if video_label.startswith('n')]
+    
+    f.write(f"  recognizer = Recognizer([{', '.join(recognizer1_videos)}])\n")
+    f.write(f"  recognizer2 = Recognizer([{', '.join(recognizer2_videos)}])\n")
+        
+    i = 0
+    list = []
+    for video_label in video_landmarks.keys():
+        i += 1
+        f.write(f"  {video_label}R = Recognizer([{video_label}])\n")
+        #list.append({video_label})
+
+    f.write(f"  return recognizer, nrecognizer\n")
         
 
 print("Template generation complete.")

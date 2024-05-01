@@ -1,6 +1,6 @@
 exec(open('dollar.py').read())
 recognizer = trained_model()
-result = recognizer.recognize([
+result = recognizer[0].recognize([
 Point(235.6186580657959,116.88117980957031,1),
 Point(249.94056701660156,94.6010971069336,1),
 Point(259.36732292175293,94.0631103515625,1),
@@ -3174,3 +3174,4 @@ Point(247.02890396118164,950.1715850830078,1),
 Point(163.9883279800415,949.8170471191406,1),
 ])
 print(result)
+
